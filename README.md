@@ -1,2 +1,7 @@
-# Ajedrez-Chess
-es una aplicacion web interactiva de ajedres con logica para los jugadores.
+Abrir la aplicación web desde un navegador de Internet. Iniciar una nueva partida seleccionando la opción Nuevo Juego. Elegir el modo de juego, ya sea contra otro jugador o contra la computadora. Seleccionar el color de las piezas (blancas o negras), si la aplicación lo permite. Mover las piezas haciendo clic sobre una pieza y luego sobre la casilla de destino válida. Seguir las reglas del ajedrez, respetando los movimientos permitidos para cada pieza. Capturar piezas del oponente moviendo una pieza propia a la casilla ocupada por una pieza rival. Proteger el rey de los ataques adversarios y responder a las situaciones de jaque. Continuar alternando turnos hasta que uno de los jugadores consiga el jaque mate, se produzca un empate o la partida finalice. Reiniciar o comenzar una nueva partida utilizando los controles disponibles en la interfaz.
+
+English Version
+
+Steps to Use a Chess Game on a Web Page
+
+Open the web application in an internet browser. Start a new game by selecting the New Game option. Choose the game mode, either against another player or against the computer. Select the piece color (white or black), if the application allows it. Move pieces by clicking on a piece and then on a valid destination square. Follow the rules of chess and the legal moves for each piece. Capture opponent pieces by moving your piece onto a square occupied by an opponent's piece. Protect your king from attacks and respond to check situations. Continue taking turns until a player achieves checkmate, a draw occurs, or the game ends. Restart or begin a new match using the available interface controls.
