@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajedrez de Élite - Juego de Estrategia Profesional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-teal-500 selection:text-slate-900">
+
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 py-4 px-4 sm:px-6 shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-tr from-indigo-500 to-teal-500 rounded-xl shadow-lg shadow-indigo-500/20">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent tracking-tight">AJEDREZ DE ÉLITE</h1>
+                    <p class="text-[10px] font-bold text-teal-400 tracking-widest uppercase">Estable, Verificado y Sin Errores</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="toggleMute()" id="muteBtn" class="p-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white rounded-xl transition-all border border-slate-700/50" title="Activar/Silenciar sonido">
+                    <svg id="soundOnIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                    <svg id="soundOffIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zm11.243-6.243a6 6 0 110 8.486m-2.121-2.121a3 3 0 110 4.242M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                
+                <button onclick="restartGame()" class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 active:scale-95 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-rose-950/20 border border-rose-500/30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15H19M9 5a9 9 0 018.84 7.16" />
+                    </svg>
+                    Reiniciar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto w-full px-4 lg:px-6 py-6 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Tablero de ajedrez y barras de información de los jugadores -->
+        <div class="col-span-1 lg:col-span-8 flex flex-col items-center justify-center w-full max-w-2xl mx-auto">
+            
+            <!-- Barra Superior: Oponente / CPU -->
+            <div class="w-full flex justify-between items-center bg-slate-900 border border-slate-800/80 rounded-t-2xl px-4 py-3 shadow-md">
+                <div class="flex items-center gap-3">
+                    <div id="opponentAvatar" class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-slate-300 border border-slate-700">
+                        🤖
+                    </div>
+                    <div>
+                        <div id="opponentName" class="font-bold text-slate-200">CPU (Nivel Estratega)</div>
+                        <div id="opponentCaptured" class="flex flex-wrap gap-0.5 mt-0.5 min-h-[20px] items-center max-w-[200px] sm:max-w-[350px]">
+                            <!-- Piezas capturadas por el Oponente -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Cronómetro Oponente -->
+                <div id="clockBlack" class="px-4 py-1.5 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xl text-slate-300 font-bold tracking-wider">
+                    10:00
+                </div>
+            </div>
+
+            <!-- Tablero Físico Integrado con Aspect-Square -->
+            <div class="relative w-full aspect-square bg-slate-900 border-x border-slate-800/80 p-1 sm:p-2 shadow-2xl">
+                <div id="boardGrid" class="grid grid-cols-8 grid-rows-8 w-full h-full rounded-lg overflow-hidden border border-slate-800/80 shadow-inner">
+                    <!-- Las casillas se generan dinámicamente -->
+                </div>
+
+                <!-- Modal de Fin de Juego -->
+                <div id="gameOverModal" class="hidden absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 text-center z-20 backdrop-blur-sm transition-all duration-300">
+                    <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-sm w-full">
+                        <div id="gameOverEmoji" class="text-5xl mb-4">🏆</div>
+                        <h3 id="gameOverTitle" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300 mb-2">¡Partida Terminada!</h3>
+                        <p id="gameOverReason" class="text-slate-300 mb-6 font-medium text-sm">El juego ha concluido.</p>
+                        <button onclick="restartGame()" class="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-black rounded-xl shadow-lg shadow-teal-500/20 active:scale-95 transition-all">
+                            Nueva Partida
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal de Promoción de Peón -->
+                <div id="promotionModal" class="hidden absolute inset-0 bg-slate-950/85 flex items-center justify-center z-35 backdrop-blur-sm">
+                    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 text-center max-w-xs shadow-2xl">
+                        <p class="font-bold text-slate-200 mb-4 text-base">Promoción de Peón</p>
+                        <div class="grid grid-cols-4 gap-3" id="promotionOptions">
+                            <!-- Los botones se inyectan en tiempo de ejecución -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra Inferior: Usuario / Blancas -->
+            <div class="w-full flex justify-between items-center bg-slate-900 border border-slate-800/80 rounded-b-2xl px-4 py-3 shadow-md">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-white border border-slate-700 ring-2 ring-teal-500/40">
+                        👤
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-100 flex items-center gap-2">
+                            Tú (Blancas)
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse" id="whiteTurnDot"></span>
+                        </div>
+                        <div id="playerCaptured" class="flex flex-wrap gap-0.5 mt-0.5 min-h-[20px] items-center max-w-[200px] sm:max-w-[350px]">
+                            <!-- Piezas capturadas por el Jugador -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Cronómetro Jugador -->
+                <div id="clockWhite" class="px-4 py-1.5 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xl text-teal-400 font-bold tracking-wider">
+                    10:00
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-1 lg:col-span-4 space-y-6 w-full">
+            
+            <!-- Tarjeta de Configuración -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+                <h3 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                    Ajustes de Juego
+                </h3>
+
+                <div class="space-y-4">
+                    <!-- Modo de Juego -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Modo de Juego</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="setGameMode('computer')" id="modeComputer" class="py-2.5 px-3 bg-teal-500 text-slate-950 font-bold text-xs rounded-xl border border-teal-500 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-teal-500/10">
+                                🤖 Contra CPU
+                            </button>
+                            <button onclick="setGameMode('local')" id="modeLocal" class="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700/50 transition-all flex items-center justify-center gap-1.5">
+                                👥 Local 1v1
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dificultad CPU -->
+                    <div id="difficultyContainer">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Dificultad de la IA</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="setDifficulty('easy')" id="diffEasy" class="py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700/50 transition-all">
+                                Principiante
+                            </button>
+                            <button onclick="setDifficulty('medium')" id="diffMedium" class="py-2 px-3 bg-indigo-600 text-white font-bold text-xs rounded-xl border border-indigo-500 transition-all shadow-md shadow-indigo-500/15">
+                                Estratega
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Configuración de Tiempo -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tiempo de Partida</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setTimeLimit(300)" id="time300" class="py-2 px-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700/50 transition-all">
+                                5 Min (Blitz)
+                            </button>
+                            <button onclick="setTimeLimit(600)" id="time600" class="py-2 px-1 bg-indigo-600 text-white font-bold text-xs rounded-xl border border-indigo-500 transition-all">
+                                10 Min (Rápido)
+                            </button>
+                            <button onclick="setTimeLimit(900)" id="time900" class="py-2 px-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700/50 transition-all">
+                                15 Min (Clásico)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Inversión estética de piezas -->
+                    <div class="flex items-center justify-between p-3 bg-slate-950/60 rounded-xl border border-slate-800/80">
+                        <span class="text-xs font-bold text-slate-300">Invertir colores de piezas</span>
+                        <button onclick="togglePieceInversion()" id="inversionToggle" class="w-12 h-6 flex items-center bg-slate-800 rounded-full p-1 cursor-pointer transition-colors duration-300 focus:outline-none">
+                            <div id="inversionKnob" class="bg-slate-400 w-4 h-4 rounded-full shadow-md transform duration-300"></div>
+                        </button>
+                    </div>
+
+                    <!-- Selección de Temas de Tablero -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tema Visual</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="changeTheme('monochrome')" id="themeBtn_monochrome" class="col-span-2 py-2 px-3 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-zinc-100 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 ring-2 ring-teal-400 border-teal-400">
+                                ⚫⚪ Monocromático Puro
+                            </button>
+                            <button onclick="changeTheme('wood')" id="themeBtn_wood" class="py-2 px-3 bg-amber-950/40 border border-amber-800/60 hover:bg-amber-950/60 text-amber-300 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5">
+                                🪵 Madera
+                            </button>
+                            <button onclick="changeTheme('emerald')" id="themeBtn_emerald" class="py-2 px-3 bg-emerald-950/40 border border-emerald-800/60 hover:bg-emerald-950/60 text-emerald-300 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5">
+                                🌲 Torneo Verde
+                            </button>
+                            <button onclick="changeTheme('cyberpunk')" id="themeBtn_cyberpunk" class="py-2 px-3 bg-purple-950/40 border border-purple-800/60 hover:bg-purple-950/60 text-purple-300 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5">
+                                ⚡ Cyberpunk
+                            </button>
+                            <button onclick="changeTheme('ocean')" id="themeBtn_ocean" class="py-2 px-3 bg-blue-950/40 border border-blue-800/60 hover:bg-blue-950/60 text-blue-300 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5">
+                                🌊 Océano Real
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log e Historial de Jugadas -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col h-64">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-bold text-slate-300 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Registro de Jugadas
+                    </h3>
+                    <button onclick="undoMove()" class="text-xs flex items-center gap-1 text-slate-400 hover:text-white transition-all bg-slate-800 hover:bg-slate-700 py-1.5 px-3 rounded-lg border border-slate-700/50">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                        </svg>
+                        Deshacer
+                    </button>
+                </div>
+
+                <div id="movesLog" class="flex-grow overflow-y-auto custom-scrollbar bg-slate-950 border border-slate-800/60 rounded-xl p-3 text-xs font-mono space-y-1">
+                    <div class="text-slate-500 italic text-center py-4">Esperando el primer movimiento...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-950 border-t border-slate-900 py-4 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-6">
+            Ajedrez de Élite © 2026 • Lógica potenciada por Chess.js y Minimax Inteligente.
+        </div>
+    </footer>
+
+    <script>
+        let audioCtx = null;
+        let isMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.warn("Fallo al inicializar AudioContext:", e);
+                }
+            }
+        }
+
+        function playSound(type) {
+            if (isMuted) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'move') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(140, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'capture') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(260, now);
+                    osc.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+                    gainNode.gain.setValueAtTime(0.12, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } else if (type === 'check') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(380, now);
+                    osc.frequency.setValueAtTime(480, now + 0.08);
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'gameover') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(330, now);
+                    osc.frequency.exponentialRampToValueAtTime(180, now + 0.5);
+                    gainNode.gain.setValueAtTime(0.2, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
+            } catch (error) {
+                console.error("Error al reproducir el sonido:", error);
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById('soundOnIcon').classList.toggle('hidden', isMuted);
+            document.getElementById('soundOffIcon').classList.toggle('hidden', !isMuted);
+        }
+
+        // Base de Datos de Temas Visuales
+        const themes = {
+            monochrome: {
+                light: 'bg-[#f0f2f5]',
+                dark: 'bg-[#1e293b]',
+                lightCoords: 'text-[#1e293b]',
+                darkCoords: 'text-[#f0f2f5]',
+                selected: 'ring-4 ring-amber-500 ring-inset',
+                possible: 'before:absolute before:w-4 before:h-4 before:bg-zinc-400/80 before:rounded-full relative flex items-center justify-center cursor-pointer',
+                possibleCapture: 'ring-4 ring-rose-500 ring-inset relative cursor-pointer',
+                lastMove: 'bg-zinc-400/30',
+                check: 'bg-rose-600/50 animate-pulse'
+            },
+            wood: {
+                light: 'bg-[#ebd1a6]',
+                dark: 'bg-[#a47449]',
+                lightCoords: 'text-[#a47449]',
+                darkCoords: 'text-[#ebd1a6]',
+                selected: 'ring-4 ring-amber-500/80 ring-inset',
+                possible: 'before:absolute before:w-4 before:h-4 before:bg-amber-600/60 before:rounded-full relative flex items-center justify-center cursor-pointer',
+                possibleCapture: 'ring-4 ring-rose-500/80 ring-inset relative cursor-pointer',
+                lastMove: 'bg-yellow-500/35',
+                check: 'bg-red-500/50 animate-pulse'
+            },
+            emerald: {
+                light: 'bg-[#eeeed2]',
+                dark: 'bg-[#769656]',
+                lightCoords: 'text-[#769656]',
+                darkCoords: 'text-[#eeeed2]',
+                selected: 'ring-4 ring-teal-500/80 ring-inset',
+                possible: 'before:absolute before:w-4 before:h-4 before:bg-teal-600/60 before:rounded-full relative flex items-center justify-center cursor-pointer',
+                possibleCapture: 'ring-4 ring-rose-500/80 ring-inset relative cursor-pointer',
+                lastMove: 'bg-yellow-300/35',
+                check: 'bg-red-500/50 animate-pulse'
+            },
+            cyberpunk: {
+                light: 'bg-[#1e1b4b] border border-indigo-500/10',
+                dark: 'bg-[#090514] border border-purple-500/25',
+                lightCoords: 'text-indigo-400',
+                darkCoords: 'text-purple-400',
+                selected: 'ring-4 ring-cyan-400 ring-inset shadow-[0_0_15px_rgba(34,211,238,0.5)]',
+                possible: 'before:absolute before:w-4 before:h-4 before:bg-cyan-500/50 before:rounded-full relative flex items-center justify-center cursor-pointer',
+                possibleCapture: 'ring-4 ring-pink-500 ring-inset relative cursor-pointer shadow-[0_0_15px_rgba(236,72,153,0.5)]',
+                lastMove: 'bg-purple-500/30 shadow-[inset_0_0_8px_rgba(168,85,247,0.4)]',
+                check: 'bg-rose-500/50 shadow-[0_0_20px_rgba(244,63,94,0.7)] animate-pulse'
+            },
+            ocean: {
+                light: 'bg-[#e9f0f8]',
+                dark: 'bg-[#4b7399]',
+                lightCoords: 'text-[#4b7399]',
+                darkCoords: 'text-[#e9f0f8]',
+                selected: 'ring-4 ring-blue-500/80 ring-inset',
+                possible: 'before:absolute before:w-4 before:h-4 before:bg-blue-600/60 before:rounded-full relative flex items-center justify-center cursor-pointer',
+                possibleCapture: 'ring-4 ring-rose-500/80 ring-inset relative cursor-pointer',
+                lastMove: 'bg-cyan-200/40',
+                check: 'bg-red-500/50 animate-pulse'
+            }
+        };
+
+        // Estado de inversión estética de piezas
+        let pieceColorsInverted = true; // Por defecto activado como el usuario lo solicitó
+
+        function getPieceSVG(type, color) {
+            const isWhitePiece = color === 'w';
+            
+            // Lógica de inversión estética
+            let fill, stroke, accent, innerFill;
+            if (pieceColorsInverted) {
+                // Blancas son oscuras, Negras son claras
+                fill = isWhitePiece ? '#1e293b' : '#ffffff';
+                stroke = isWhitePiece ? '#ffffff' : '#0f172a';
+                accent = isWhitePiece ? '#475569' : '#cbd5e1';
+                innerFill = isWhitePiece ? '#334155' : '#ffffff';
+            } else {
+                // Normal: Blancas son claras, Negras son oscuras
+                fill = isWhitePiece ? '#ffffff' : '#1e293b';
+                stroke = isWhitePiece ? '#0f172a' : '#ffffff';
+                accent = isWhitePiece ? '#cbd5e1' : '#475569';
+                innerFill = isWhitePiece ? '#ffffff' : '#334155';
+            }
+
+            switch (type) {
+                case 'p':
+                    return `
+                    <svg viewBox="0 0 45 45" class="w-4/5 h-4/5 transition-transform duration-200 hover:scale-105 select-none pointer-events-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+                        <g fill="${fill}" stroke="${stroke}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+                            <path d="M22.5,9 C24.24,9 25.65,10.41 25.65,12.15 C25.65,13.89 24.24,15.3 22.5,15.3 C20.76,15.3 19.35,13.89 19.35,12.15 C19.35,10.41 20.76,9 22.5,9 z" fill="${innerFill}" />
+                            <path d="M22.5,15.3 C19.5,15.3 17.5,18.5 17.5,23 C17.5,27.5 18,31.5 12,35.5 L33,35.5 C27,31.5 27.5,27.5 27.5,23 C27.5,18.5 25.5,15.3 22.5,15.3 z" />
+                            <path d="M11.5,35.5 L33.5,35.5 L33.5,38.5 L11.5,38.5 z" fill="${accent}" />
+                        </g>
+                    </svg>`;
+                case 'r':
+                    return `
+                    <svg viewBox="0 0 45 45" class="w-4/5 h-4/5 transition-transform duration-200 hover:scale-105 select-none pointer-events-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+                        <g fill="${fill}" stroke="${stroke}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+                            <path d="M9,39 L36,39 L36,36 L9,36 L9,39 z" fill="${accent}" />
+                            <path d="M12,36 L33,36 L30,19 L15,19 L12,36 z" />
+                            <path d="M13,19 L32,19 L32,11 L29,11 L29,15 L26,15 L26,11 L19,11 L19,15 L16,15 L16,11 L13,11 L13,19 z" />
+                        </g>
+                    </svg>`;
+                case 'n':
+                    return `
+                    <svg viewBox="0 0 45 45" class="w-4/5 h-4/5 transition-transform duration-200 hover:scale-105 select-none pointer-events-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+                        <g fill="${fill}" stroke="${stroke}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+                            <path d="M 22,10 C 22,10 19,11 16,15 C 13,19 13,23 13,23 C 13,23 14,21 16,20 C 18,19 20,20 20,20 C 20,20 18,22 17,25 C 16,28 17,31 17,31 C 17,31 18,28 21,28 C 24,28 27,30 27,33 C 27,36 24,39 20,39 L 34,39 C 34,39 36,36 36,29 C 36,22 32,13 22,10 z" />
+                            <circle cx="27" cy="18" r="2" fill="${accent}" />
+                        </g>
+                    </svg>`;
+                case 'b':
+                    return `
+                    <svg viewBox="0 0 45 45" class="w-4/5 h-4/5 transition-transform duration-200 hover:scale-105 select-none pointer-events-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+                        <g fill="${fill}" stroke="${stroke}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+                            <path d="M9,36 L36,36 L33,33 L12,33 L9,36 z" fill="${accent}" />
+                            <path d="M22.5,9 C22.5,9 21,11 20,13 C17,19 17,25 22.5,31 C28,25 28,19 25,13 C24,11 22.5,9 22.5,9 z" />
+                            <circle cx="22.5" cy="7" r="1.5" fill="${accent}" />
+                            <path d="M17.5,19 L27.5,19 M22.5,14 L22.5,24" stroke="${stroke}" stroke-width="1.5" />
+                        </g>
+                    </svg>`;
+                case 'q':
+                    return `
+                    <svg viewBox="0 0 45 45" class="w-4/5 h-4/5 transition-transform duration-200 hover:scale-105 select-none pointer-events-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+                        <g fill="${fill}" stroke="${stroke}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+                            <path d="M9,39 L36,39 L36,36 L9,36 L9,39 z" fill="${accent}" />
+                            <path d="M12,36 C12,36 9,20 9,15 C9,10 14,12 14,12 C14,12 18,8 22.5,11 C27,8 31,12 31,12 C31,12 36,10 36,15 C36,20 33,36 33,36 L12,36 z" />
+                            <circle cx="9" cy="12" r="1.5" fill="${accent}" />
+                            <circle cx="14" cy="9" r="1.5" fill="${accent}" />
+                            <circle cx="22.5" cy="7" r="1.5" fill="${accent}" />
+                            <circle cx="31" cy="9" r="1.5" fill="${accent}" />
+                            <circle cx="36" cy="12" r="1.5" fill="${accent}" />
+                        </g>
+                    </svg>`;
+                case 'k':
+                    return `
+                    <svg viewBox="0 0 45 45" class="w-4/5 h-4/5 transition-transform duration-200 hover:scale-105 select-none pointer-events-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]">
+                        <g fill="${fill}" stroke="${stroke}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+                            <path d="M9,39 L36,39 L36,36 L9,36 L9,39 z" fill="${accent}" />
+                            <path d="M12,36 L33,36 L31,16 C31,16 26,18 22.5,15 C19,18 14,16 14,16 L12,36 z" />
+                            <path d="M22.5,6 L22.5,14 M18.5,10 L26.5,10" stroke="${stroke}" stroke-width="2" />
+                        </g>
+                    </svg>`;
+            }
+        }
+
+        let game = new Chess();
+        let selectedSquare = null;
+        let possibleMoves = [];
+        let boardTheme = 'monochrome';
+        let gameMode = 'computer';
+        let difficulty = 'medium';
+        
+        let initialTimeLimit = 600; 
+        let timers = { w: 600, b: 600 };
+        let timerInterval = null;
+        let pendingPromotionMove = null;
+
+        const columns = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        const rows = ['8', '7', '6', '5', '4', '3', '2', '1'];
+
+        function drawBoard() {
+            const grid = document.getElementById('boardGrid');
+            grid.innerHTML = '';
+
+            const theme = themes[boardTheme];
+            const checkSquare = getKingInCheckSquare();
+            const lastMove = getLastMoveSquares();
+
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const squareName = columns[c] + rows[r];
+                    const piece = game.get(squareName);
+
+                    const cell = document.createElement('div');
+                    cell.dataset.square = squareName;
+
+                    const isDarkCell = (r + c) % 2 === 1;
+                    const classes = [
+                        'w-full', 'h-full', 'flex', 'items-center', 'justify-center',
+                        'relative', 'select-none', 'cursor-pointer', 'transition-colors', 'duration-150'
+                    ];
+
+                    classes.push(isDarkCell ? theme.dark : theme.light);
+
+                    if (lastMove.includes(squareName)) {
+                        classes.push(theme.lastMove);
+                    }
+
+                    if (squareName === checkSquare) {
+                        classes.push(theme.check);
+                    }
+
+                    if (squareName === selectedSquare) {
+                        classes.push(theme.selected);
+                    }
+
+                    if (possibleMoves.includes(squareName)) {
+                        const isCapture = piece !== null;
+                        if (isCapture) {
+                            classes.push(theme.possibleCapture);
+                        }
+                    }
+
+                    // Asignación directa e integral de clases para evitar excepciones del DOM
+                    cell.className = classes.filter(Boolean).join(' ');
+
+                    // Inyección de la pieza
+                    if (piece) {
+                        cell.innerHTML = getPieceSVG(piece.type, piece.color);
+                    }
+
+                    // Inyección del círculo de movimiento posible
+                    if (possibleMoves.includes(squareName) && piece === null) {
+                        const indicator = document.createElement('div');
+                        indicator.className = theme.possible;
+                        cell.appendChild(indicator);
+                    }
+
+                    // Coordenadas integradas de alta elegancia (Fila en extremo derecho, Letra en extremo inferior)
+                    const labelColor = isDarkCell ? theme.lightCoords : theme.darkCoords;
+
+                    // Números en la columna H (extremo derecho)
+                    if (c === 7) {
+                        const rankLabel = document.createElement('span');
+                        rankLabel.className = `absolute top-1 right-1 text-[9px] font-extrabold ${labelColor} pointer-events-none select-none opacity-80`;
+                        rankLabel.textContent = rows[r];
+                        cell.appendChild(rankLabel);
+                    }
+
+                    // Letras en la fila 1 (extremo inferior)
+                    if (r === 7) {
+                        const fileLabel = document.createElement('span');
+                        fileLabel.className = `absolute bottom-1 left-1 text-[9px] font-extrabold ${labelColor} pointer-events-none select-none opacity-80`;
+                        fileLabel.textContent = columns[c].toUpperCase();
+                        cell.appendChild(fileLabel);
+                    }
+
+                    cell.addEventListener('click', () => handleSquareClick(squareName));
+                    grid.appendChild(cell);
+                }
+            }
+            
+            updateCapturedPiecesUI();
+            updateMovesLog();
+            updateTurnIndicators();
+        }
+
+        function getKingInCheckSquare() {
+            if (!game.in_check()) return null;
+            const turn = game.turn();
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const square = columns[c] + rows[r];
+                    const piece = game.get(square);
+                    if (piece && piece.type === 'k' && piece.color === turn) {
+                        return square;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function getLastMoveSquares() {
+            const history = game.history({ verbose: true });
+            if (history.length === 0) return [];
+            const last = history[history.length - 1];
+            return [last.from, last.to];
+        }
+
+        function handleSquareClick(squareName) {
+            if (game.game_over() || (gameMode === 'computer' && game.turn() === 'b')) return;
+
+            const piece = game.get(squareName);
+            const activeColor = game.turn();
+
+            if (possibleMoves.includes(squareName)) {
+                executeMove(selectedSquare, squareName);
+                return;
+            }
+
+            if (piece && piece.color === activeColor) {
+                selectedSquare = squareName;
+                const rawMoves = game.moves({ square: squareName, verbose: true });
+                possibleMoves = rawMoves.map(m => m.to);
+            } else {
+                selectedSquare = null;
+                possibleMoves = [];
+            }
+            drawBoard();
+        }
+
+        function executeMove(fromSquare, toSquare, promotionPiece = null) {
+            const piece = game.get(fromSquare);
+            if (piece && piece.type === 'p') {
+                const targetRank = toSquare[1];
+                if (targetRank === '8' || targetRank === '1') {
+                    if (!promotionPiece) {
+                        pendingPromotionMove = { from: fromSquare, to: toSquare };
+                        showPromotionModal(piece.color);
+                        return;
+                    }
+                }
+            }
+
+            const isCapture = game.get(toSquare) !== null;
+
+            const moveObj = game.move({
+                from: fromSquare,
+                to: toSquare,
+                promotion: promotionPiece || 'q'
+            });
+
+            if (moveObj) {
+                selectedSquare = null;
+                possibleMoves = [];
+
+                if (game.in_check()) {
+                    playSound('check');
+                } else if (isCapture) {
+                    playSound('capture');
+                } else {
+                    playSound('move');
+                }
+
+                drawBoard();
+                checkGameStatus();
+
+                if (!timerInterval) {
+                    startTimers();
+                }
+
+                if (gameMode === 'computer' && !game.game_over() && game.turn() === 'b') {
+                    setTimeout(makeComputerMove, 450);
+                }
+            }
+        }
+
+        function showPromotionModal(color) {
+            const modal = document.getElementById('promotionModal');
+            const optionsContainer = document.getElementById('promotionOptions');
+            optionsContainer.innerHTML = '';
+            modal.classList.remove('hidden');
+
+            const choices = [
+                { type: 'q', name: 'Reina' },
+                { type: 'r', name: 'Torre' },
+                { type: 'b', name: 'Alfil' },
+                { type: 'n', name: 'Caballo' }
+            ];
+
+            choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'bg-slate-800 hover:bg-slate-700 p-3 rounded-xl border border-slate-700/60 flex flex-col items-center gap-1 active:scale-95 transition-all text-xs text-slate-300 font-semibold';
+                button.innerHTML = `
+                    <div class="w-12 h-12 flex items-center justify-center">${getPieceSVG(choice.type, color)}</div>
+                    <span>${choice.name}</span>
+                `;
+                button.onclick = () => {
+                    modal.classList.add('hidden');
+                    if (pendingPromotionMove) {
+                        executeMove(pendingPromotionMove.from, pendingPromotionMove.to, choice.type);
+                        pendingPromotionMove = null;
+                    }
+                };
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        const pieceWeights = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 9000 };
+
+        function evaluateBoardState(board) {
+            let totalScore = 0;
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const piece = board[r][c];
+                    if (piece) {
+                        let value = pieceWeights[piece.type];
+                        let positionalBonus = 0;
+                        if ((r === 3 || r === 4) && (c === 3 || c === 4)) {
+                            positionalBonus = 2.0; 
+                        } else if (r >= 2 && r <= 5 && c >= 2 && c <= 5) {
+                            positionalBonus = 0.8;
+                        }
+
+                        const pieceValue = value + positionalBonus;
+
+                        if (piece.color === 'b') {
+                            totalScore += pieceValue; 
+                        } else {
+                            totalScore -= pieceValue; 
+                        }
+                    }
+                }
+            }
+            return totalScore;
+        }
+
+        function minimax(gameInstance, depth, alpha, beta, isMaximizing) {
+            if (depth === 0 || gameInstance.game_over()) {
+                return { score: evaluateBoardState(gameInstance.board()), move: null };
+            }
+
+            const rawMoves = gameInstance.moves({ verbose: true });
+            rawMoves.sort(() => Math.random() - 0.5);
+
+            let bestMove = null;
+
+            if (isMaximizing) {
+                let maxScore = -Infinity;
+                for (const move of rawMoves) {
+                    gameInstance.move(move);
+                    const evaluation = minimax(gameInstance, depth - 1, alpha, beta, false);
+                    gameInstance.undo();
+
+                    if (evaluation.score > maxScore) {
+                        maxScore = evaluation.score;
+                        bestMove = move;
+                    }
+                    alpha = Math.max(alpha, maxScore);
+                    if (beta <= alpha) break; 
+                }
+                return { score: maxScore, move: bestMove };
+            } else {
+                let minScore = Infinity;
+                for (const move of rawMoves) {
+                    gameInstance.move(move);
+                    const evaluation = minimax(gameInstance, depth - 1, alpha, beta, true);
+                    gameInstance.undo();
+
+                    if (evaluation.score < minScore) {
+                        minScore = evaluation.score;
+                        bestMove = move;
+                    }
+                    beta = Math.min(beta, minScore);
+                    if (beta <= alpha) break; 
+                }
+                return { score: minScore, move: bestMove };
+            }
+        }
+
+        function makeComputerMove() {
+            if (game.game_over()) return;
+
+            const moves = game.moves({ verbose: true });
+            if (moves.length === 0) return;
+
+            let selectedMove = null;
+
+            if (difficulty === 'easy') {
+                selectedMove = moves[Math.floor(Math.random() * moves.length)];
+            } else {
+                const searchResult = minimax(game, 2, -Infinity, Infinity, true);
+                selectedMove = searchResult.move || moves[Math.floor(Math.random() * moves.length)];
+            }
+
+            if (selectedMove) {
+                const isCapture = game.get(selectedMove.to) !== null;
+                game.move(selectedMove);
+
+                if (game.in_check()) {
+                    playSound('check');
+                } else if (isCapture) {
+                    playSound('capture');
+                } else {
+                    playSound('move');
+                }
+
+                drawBoard();
+                checkGameStatus();
+            }
+        }
+
+        function startTimers() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const activeTurn = game.turn();
+                timers[activeTurn]--;
+                updateClockUI();
+
+                if (timers[activeTurn] <= 0) {
+                    clearInterval(timerInterval);
+                    triggerGameOver('timeout', activeTurn);
+                }
+            }, 1000);
+        }
+
+        function updateClockUI() {
+            const formatTime = (timeInSecs) => {
+                const mins = Math.floor(timeInSecs / 60);
+                const secs = timeInSecs % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            const whiteClock = document.getElementById('clockWhite');
+            const blackClock = document.getElementById('clockBlack');
+
+            whiteClock.textContent = formatTime(timers.w);
+            blackClock.textContent = formatTime(timers.b);
+
+            if (timers.w < 30) {
+                whiteClock.className = "px-4 py-1.5 bg-slate-950 border border-rose-500 rounded-xl font-mono text-xl text-rose-500 font-bold tracking-wider animate-pulse";
+            } else {
+                if (game.turn() === 'w') {
+                    whiteClock.className = "px-4 py-1.5 bg-slate-950 border border-teal-500/50 rounded-xl font-mono text-xl text-teal-400 font-bold tracking-wider";
+                } else {
+                    whiteClock.className = "px-4 py-1.5 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xl text-slate-400 font-bold tracking-wider";
+                }
+            }
+
+            if (timers.b < 30) {
+                blackClock.className = "px-4 py-1.5 bg-slate-950 border border-rose-500 rounded-xl font-mono text-xl text-rose-500 font-bold tracking-wider animate-pulse";
+            } else {
+                if (game.turn() === 'b') {
+                    blackClock.className = "px-4 py-1.5 bg-slate-950 border border-teal-500/50 rounded-xl font-mono text-xl text-teal-400 font-bold tracking-wider";
+                } else {
+                    blackClock.className = "px-4 py-1.5 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xl text-slate-300 font-bold tracking-wider";
+                }
+            }
+        }
+
+        function checkGameStatus() {
+            if (game.game_over()) {
+                clearInterval(timerInterval);
+                if (game.in_checkmate()) {
+                    const loserColor = game.turn();
+                    triggerGameOver('checkmate', loserColor);
+                } else if (game.in_draw()) {
+                    triggerGameOver('draw');
+                }
+            }
+        }
+
+        function triggerGameOver(reason, activePlayerColor = null) {
+            playSound('gameover');
+            const modal = document.getElementById('gameOverModal');
+            const title = document.getElementById('gameOverTitle');
+            const reasonText = document.getElementById('gameOverReason');
+            const emoji = document.getElementById('gameOverEmoji');
+
+            modal.classList.remove('hidden');
+
+            if (reason === 'checkmate') {
+                const winner = activePlayerColor === 'w' ? 'Negras' : 'Blancas';
+                emoji.textContent = '👑';
+                title.textContent = `¡Victoria para las ${winner}!`;
+                reasonText.textContent = `Jaque Mate absoluto en el tablero.`;
+            } else if (reason === 'draw') {
+                emoji.textContent = '🤝';
+                title.textContent = '¡Empate!';
+                reasonText.textContent = 'La partida culmina en tablas por ahogado, repetición de jugadas o insuficiencia material.';
+            } else if (reason === 'timeout') {
+                const winner = activePlayerColor === 'w' ? 'Negras' : 'Blancas';
+                emoji.textContent = '⏳';
+                title.textContent = `¡Victoria para las ${winner}!`;
+                reasonText.textContent = `El tiempo del oponente se ha agotado.`;
+            }
+        }
+
+        function updateMovesLog() {
+            const container = document.getElementById('movesLog');
+            const moves = game.history();
+            container.innerHTML = '';
+
+            if (moves.length === 0) {
+                container.innerHTML = `<div class="text-slate-500 italic text-center py-4">Esperando el primer movimiento...</div>`;
+                return;
+            }
+
+            let html = '';
+            for (let i = 0; i < moves.length; i += 2) {
+                const moveNumber = Math.floor(i / 2) + 1;
+                const whiteMove = moves[i];
+                const blackMove = moves[i + 1] || '';
+
+                html += `
+                    <div class="flex justify-between items-center py-1 px-2 hover:bg-slate-900 rounded transition-colors border-b border-slate-900/40">
+                        <span class="text-slate-500 font-bold w-12">${moveNumber}.</span>
+                        <span class="text-slate-200 font-semibold flex-1">${whiteMove}</span>
+                        <span class="text-slate-400 font-semibold flex-1">${blackMove}</span>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function undoMove() {
+            if (gameMode === 'computer') {
+                if (game.history().length >= 2) {
+                    game.undo();
+                    game.undo();
+                } else if (game.history().length === 1) {
+                    game.undo();
+                }
+            } else {
+                if (game.history().length >= 1) {
+                    game.undo();
+                }
+            }
+            selectedSquare = null;
+            possibleMoves = [];
+            drawBoard();
+        }
+
+        function updateCapturedPiecesUI() {
+            const totalPieces = {
+                w: { p: 8, n: 2, b: 2, r: 2, q: 1 },
+                b: { p: 8, n: 2, b: 2, r: 2, q: 1 }
+            };
+
+            const currentPieces = {
+                w: { p: 0, n: 0, b: 0, r: 0, q: 0 },
+                b: { p: 0, n: 0, b: 0, r: 0, q: 0 }
+            };
+
+            const board = game.board();
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const cell = board[r][c];
+                    if (cell && cell.type !== 'k') { 
+                        currentPieces[cell.color][cell.type]++;
+                    }
+                }
+            }
+
+            const whiteCapturedContainer = document.getElementById('opponentCaptured'); 
+            const blackCapturedContainer = document.getElementById('playerCaptured');   
+
+            whiteCapturedContainer.innerHTML = '';
+            blackCapturedContainer.innerHTML = '';
+
+            const renderCapturedIcons = (color, targetContainer) => {
+                const opponentColor = color === 'w' ? 'b' : 'w';
+                const list = totalPieces[opponentColor];
+                
+                for (const type in list) {
+                    const diff = list[type] - currentPieces[opponentColor][type];
+                    for (let i = 0; i < diff; i++) {
+                        const icon = document.createElement('span');
+                        icon.className = 'w-5 h-5 flex items-center justify-center opacity-80 scale-95';
+                        icon.innerHTML = getPieceSVG(type, opponentColor);
+                        targetContainer.appendChild(icon);
+                    }
+                }
+            };
+
+            renderCapturedIcons('b', blackCapturedContainer); 
+            renderCapturedIcons('w', whiteCapturedContainer); 
+        }
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            const btnComputer = document.getElementById('modeComputer');
+            const btnLocal = document.getElementById('modeLocal');
+            const diffContainer = document.getElementById('difficultyContainer');
+
+            if (mode === 'computer') {
+                btnComputer.className = "py-2.5 px-3 bg-teal-500 text-slate-950 font-bold text-xs rounded-xl border border-teal-500 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-teal-500/10";
+                btnLocal.className = "py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700/50 transition-all flex items-center justify-center gap-1.5";
+                diffContainer.style.display = 'block';
+                document.getElementById('opponentName').textContent = `CPU (Nivel ${difficulty === 'easy' ? 'Fácil' : 'Estratega'})`;
+                document.getElementById('opponentAvatar').textContent = '🤖';
+            } else {
+                btnLocal.className = "py-2.5 px-3 bg-teal-500 text-slate-950 font-bold text-xs rounded-xl border border-teal-500 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-teal-500/10";
+                btnComputer.className = "py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700/50 transition-all flex items-center justify-center gap-1.5";
+                diffContainer.style.display = 'none';
+                document.getElementById('opponentName').textContent = 'Oponente Local';
+                document.getElementById('opponentAvatar').textContent = '👤';
+            }
+            restartGame();
+        }
+
+        function setDifficulty(level) {
+            difficulty = level;
+            const btnEasy = document.getElementById('diffEasy');
+            const btnMedium = document.getElementById('diffMedium');
+
+            if (level === 'easy') {
+                btnEasy.className = "py-2 px-3 bg-indigo-600 text-white font-bold text-xs rounded-xl border border-indigo-500 transition-all shadow-md";
+                btnMedium.className = "py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700/50 transition-all";
+                document.getElementById('opponentName').textContent = "CPU (Nivel Fácil)";
+            } else {
+                btnMedium.className = "py-2 px-3 bg-indigo-600 text-white font-bold text-xs rounded-xl border border-indigo-500 transition-all shadow-md";
+                btnEasy.className = "py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700/50 transition-all";
+                document.getElementById('opponentName').textContent = "CPU (Nivel Estratega)";
+            }
+        }
+
+        function setTimeLimit(seconds) {
+            initialTimeLimit = seconds;
+            [300, 600, 900].forEach(time => {
+                const btn = document.getElementById(`time${time}`);
+                if (btn) {
+                    if (time === seconds) {
+                        btn.className = "py-2 px-1 bg-indigo-600 text-white font-bold text-xs rounded-xl border border-indigo-500 transition-all shadow-md";
+                    } else {
+                        btn.className = "py-2 px-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700/50 transition-all";
+                    }
+                }
+            });
+            restartGame();
+        }
+
+        function togglePieceInversion() {
+            pieceColorsInverted = !pieceColorsInverted;
+            const knob = document.getElementById('inversionKnob');
+            const toggle = document.getElementById('inversionToggle');
+            if (pieceColorsInverted) {
+                knob.className = "bg-teal-400 w-4 h-4 rounded-full shadow-md transform translate-x-6 duration-300";
+                toggle.className = "w-12 h-6 flex items-center bg-slate-900 border border-teal-500/30 rounded-full p-1 cursor-pointer transition-colors duration-300 focus:outline-none";
+            } else {
+                knob.className = "bg-slate-400 w-4 h-4 rounded-full shadow-md transform translate-x-0 duration-300";
+                toggle.className = "w-12 h-6 flex items-center bg-slate-800 rounded-full p-1 cursor-pointer transition-colors duration-300 focus:outline-none";
+            }
+            drawBoard();
+        }
+
+        function changeTheme(themeName) {
+            boardTheme = themeName;
+            const themeKeys = ['monochrome', 'wood', 'emerald', 'cyberpunk', 'ocean'];
+            themeKeys.forEach(t => {
+                const btn = document.getElementById(`themeBtn_${t}`);
+                if (btn) {
+                    if (t === themeName) {
+                        btn.className = btn.className.split(' ').filter(c => !c.startsWith('ring-')).join(' ') + ' ring-2 ring-teal-400 border-teal-400';
+                    } else {
+                        btn.className = btn.className.split(' ').filter(c => !c.startsWith('ring-') && c !== 'border-teal-400').join(' ');
+                    }
+                }
+            });
+            drawBoard();
+        }
+
+        function updateTurnIndicators() {
+            const whiteTurnDot = document.getElementById('whiteTurnDot');
+            if (game.turn() === 'w') {
+                whiteTurnDot.classList.remove('invisible');
+                whiteTurnDot.classList.add('inline-block');
+            } else {
+                whiteTurnDot.classList.remove('inline-block');
+                whiteTurnDot.classList.add('invisible');
+            }
+        }
+
+        function restartGame() {
+            game.reset();
+            selectedSquare = null;
+            possibleMoves = [];
+
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timers.w = initialTimeLimit;
+            timers.b = initialTimeLimit;
+
+            document.getElementById('gameOverModal').classList.add('hidden');
+
+            updateClockUI();
+            drawBoard();
+        }
+
+        // Inicializador principal de la pantalla
+        window.onload = function() {
+            // Inicializar visualmente el toggle de inversión
+            const knob = document.getElementById('inversionKnob');
+            const toggle = document.getElementById('inversionToggle');
+            if (pieceColorsInverted) {
+                knob.className = "bg-teal-400 w-4 h-4 rounded-full shadow-md transform translate-x-6 duration-300";
+                toggle.className = "w-12 h-6 flex items-center bg-slate-900 border border-teal-500/30 rounded-full p-1 cursor-pointer transition-colors duration-300 focus:outline-none";
+            } else {
+                knob.className = "bg-slate-400 w-4 h-4 rounded-full shadow-md transform translate-x-0 duration-300";
+                toggle.className = "w-12 h-6 flex items-center bg-slate-800 rounded-full p-1 cursor-pointer transition-colors duration-300 focus:outline-none";
+            }
+
+            changeTheme('monochrome');
+            restartGame();
+        }
+    </script>
+</body>
+</html>
